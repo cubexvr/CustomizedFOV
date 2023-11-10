@@ -1,6 +1,6 @@
 // MIT License
 //
-// << insert your own copyright here >>
+// Copyright(c) 2023 cubexvr
 //
 // Based on https://github.com/mbucchia/OpenXR-Layer-Template.
 // Copyright(c) 2022-2023 Matthieu Bucchianeri
@@ -93,7 +93,10 @@ namespace openxr_api_layer {
                                XrView* views) override {
             XrResult result =
                 OpenXrApi::xrLocateViews(session, viewLocateInfo, viewState, viewCapacityInput, viewCountOutput, views);
-            if (XR_SUCCEEDED(result) && viewCapacityInput) {
+                
+
+            if (XR_SUCCEEDED(result) && viewCapacityInput &&
+                viewLocateInfo->viewConfigurationType == XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO) {
                 for (uint32_t i = 0; i < *viewCountOutput; i++) {
                     if (!anglesWrittenToReg) {
                         int systemAngleUp = abs(views[i].fov.angleUp * 180000.0f / DirectX::XM_PI);
