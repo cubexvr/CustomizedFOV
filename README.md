@@ -4,7 +4,10 @@ A lot of users cannot see (for various reasons, e.g. their indiuvidual headshape
 So in order to gain performance it is useful to reduce the FOV to the part the user can actually see.
 This is what this simple layer is all about. In addition to reducing the for by a factor the layer also scales the resolution accordingly, to keep the ppd the same. 
 In order to do this correctly the layer has once to be active in a openXR session, i.e. you have once to start an random openXR application which actually renders something in VR. 
-After that the FOV values of your headset will be known to the layer and it should scale the resolution correctly.
+After that the FOV values of your headset will be known to the layer and appear in these registry values (values are in degrees multiplied by 1000):
+
+  Computer\HKEY_CURRENT_USER\Software\CustomizedFOV\angle_down
+  Computer\HKEY_CURRENT_USER\Software\CustomizedFOV\angle_up
 
 How to set the FOV Customization factors:
 
