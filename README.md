@@ -7,8 +7,9 @@ In order to do this correctly the layer has once to be active in a openXR sessio
 After that the FOV values of your headset will be known to the layer and it should scale the resolution correctly.
 
 How to set the FOV Customization factors:
-  The following regestry DWORD values are used for scaling the fov. 
-  The numerical value is the fov scaling factor * 1000, e.g. if you want to reduce the vertial fov by 80% you have to set fov_down and fov_up to 800 (which is interpreted as 0.8)
+
+  You nhave to add the following regestry DWORD values are used for scaling the fov. 
+  The numerical value is the fov scaling factor * 1000, e.g. if you want to reduce the vertial fov to 80% you have to set fov_down and fov_up to 800 (which is interpreted as 0.8)
   
   Computer\HKEY_CURRENT_USER\Software\CustomizedFOV\fov_down
   Computer\HKEY_CURRENT_USER\Software\CustomizedFOV\fov_up
