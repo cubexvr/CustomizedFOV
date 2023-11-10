@@ -1,14 +1,14 @@
 {
   "file_format_version" : "1.0.0",
   "api_layer": {
-    "name": "XR_APILAYER_name",
-    "library_path": ".\\XR_APILAYER_name-32.dll",
+    "name": "XR_APILAYER_CUBEXVR_customized_fov",
+    "library_path": ".\\XR_APILAYER_CUBEXVR_customized_fov-32.dll",
     "api_version": "1.0",
     "implementation_version": "1",
-    "description": "An API layer template",
+    "description": "An API layer for customizing the fov",
     "functions": {
       "xrNegotiateLoaderApiLayerInterface": "xrNegotiateLoaderApiLayerInterface"
     },
-    "disable_environment": "DISABLE_XR_APILAYER_name"
+    "disable_environment": "DISABLE_XR_APILAYER_CUBEXVR_customized_fov"
   }
 }

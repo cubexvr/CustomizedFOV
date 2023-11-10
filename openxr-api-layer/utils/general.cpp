@@ -23,6 +23,7 @@
 #include "pch.h"
 
 #include "general.h"
+#include <log.h>
 
 namespace {
 
@@ -141,5 +142,41 @@ namespace openxr_api_layer::utils::general {
             (-Dot(vDirection, point) + (quadSize.height / 2.f)) / quadSize.height,
         };
     }
+
+    const std::string RegPrefix = "SOFTWARE\\CustomizedFOV";
+
+    std::optional<int> getSetting(const std::string& value) {
+        return RegGetDword(HKEY_CURRENT_USER, RegPrefix, value);
+    }
+
+    void setSetting(const std::string& value, int dwordValue) {
+        RegSetDword(HKEY_CURRENT_USER, RegPrefix, value, dwordValue);
+    }
+
+    std::optional<int> RegGetDword(HKEY hKey, const std::string& subKey, const std::string& value) {
+        DWORD data{};
+        DWORD dataSize = sizeof(data);
+        LONG retCode = ::RegGetValue(hKey,
+                                     utf8_to_wide(subKey).c_str(),
+                                     utf8_to_wide(value).c_str(),
+                                     RRF_SUBKEY_WOW6464KEY | RRF_RT_REG_DWORD,
+                                     nullptr,
+                                     &data,
+                                     &dataSize);
+        if (retCode != ERROR_SUCCESS) {
+            return {};
+        }
+        return data;
+    }
+
+    void RegSetDword(HKEY hKey, const std::string& subKey, const std::string& value, DWORD dwordValue) {
+        DWORD dataSize = sizeof(dwordValue);
+        LONG retCode = ::RegSetKeyValue(
+            hKey, utf8_to_wide(subKey).c_str(), utf8_to_wide(value).c_str(), REG_DWORD, &dwordValue, dataSize);
+        if (retCode != ERROR_SUCCESS) {
+            log::Log("Failed to write value: %d\n", retCode);
+        }
+    }
+
 
 } // namespace openxr_api_layer::utils::general

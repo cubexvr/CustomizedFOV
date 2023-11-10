@@ -40,11 +40,84 @@ namespace openxr_api_layer {
     const std::vector<std::string> blockedExtensions = {};
     const std::vector<std::string> implicitExtensions = {};
 
+
     // This class implements our API layer.
     class OpenXrLayer : public openxr_api_layer::OpenXrApi {
+        XrFovf m_cachedEyeFov[2] = {{}, {}};
+        float fovUp;
+        float fovDown;
+        bool anglesWrittenToReg = false;
+        const float defaultFovAngle = 45000;
+
       public:
         OpenXrLayer() = default;
         ~OpenXrLayer() = default;
+
+       	XrResult xrEnumerateViewConfigurationViews(XrInstance instance,
+                                                              XrSystemId systemId,
+                                                              XrViewConfigurationType viewConfigurationType,
+                                                              uint32_t viewCapacityInput,
+                                                              uint32_t* viewCountOutput,
+                                                   XrViewConfigurationView* views) override {
+            Log("xrEnumerateViewConfigurationViews\n");
+            const XrResult result = OpenXrApi::xrEnumerateViewConfigurationViews(
+                instance,
+                                                                 systemId,
+                                                                 viewConfigurationType,
+                                                                 viewCapacityInput,
+                                                                 viewCountOutput,
+                                                                 views);
+            if (XR_SUCCEEDED(result) && viewCapacityInput) {
+                if (viewConfigurationType == XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO) {
+                    for (uint32_t i = 0; i < *viewCountOutput; i++) {
+                        views[i].recommendedImageRectHeight =
+                            (views[i].recommendedImageRectHeight / 2) *
+                                (tan(m_cachedEyeFov[i].angleUp * fovUp) /
+                                 tan(m_cachedEyeFov[i].angleUp)) 
+                            +
+                            (views[i].recommendedImageRectHeight / 2) *
+                                (tan(m_cachedEyeFov[i].angleDown * fovDown) /
+                                 tan(m_cachedEyeFov[i].angleDown));                                                                   
+                    }
+                }
+            }
+            return result;
+
+        }
+
+	    XrResult xrLocateViews(XrSession session,
+                               const XrViewLocateInfo* viewLocateInfo,
+                               XrViewState* viewState,
+                               uint32_t viewCapacityInput,
+                               uint32_t* viewCountOutput,
+                               XrView* views) override {
+            XrResult result =
+                OpenXrApi::xrLocateViews(session, viewLocateInfo, viewState, viewCapacityInput, viewCountOutput, views);
+            if (XR_SUCCEEDED(result) && viewCapacityInput) {
+                for (uint32_t i = 0; i < *viewCountOutput; i++) {
+                    if (!anglesWrittenToReg) {
+                        int systemAngleUp = abs(views[i].fov.angleUp * 180000.0f / DirectX::XM_PI);
+                        int systemAngleDown = abs(views[i].fov.angleDown * 180000.0f / DirectX::XM_PI);
+                        Log(fmt::format("system angle_up: {}\n", systemAngleUp));
+                        Log(fmt::format("system angle_down: {}\n", systemAngleDown));
+                        utils::general::setSetting("angle_up", systemAngleUp);
+                        utils::general::setSetting("angle_down", systemAngleDown);
+                        Log(fmt::format("written angle_up: {}\n",
+                                        utils::general::getSetting("angle_up").value_or(defaultFovAngle)));
+                        Log(fmt::format("written angle_down: {}\n",
+                                        utils::general::getSetting("angle_down").value_or(defaultFovAngle)));
+                        getFovAnglesSettings();
+                        anglesWrittenToReg = true;
+                    }
+                    views[i].fov.angleUp = views[i].fov.angleUp * fovUp;
+                    views[i].fov.angleDown = views[i].fov.angleDown * fovDown;
+                }
+            }
+
+            return result;
+        }
+
+
 
         // https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetInstanceProcAddr
         XrResult xrGetInstanceProcAddr(XrInstance instance, const char* name, PFN_xrVoidFunction* function) override {
@@ -109,7 +182,24 @@ namespace openxr_api_layer {
             TraceLoggingWrite(g_traceProvider, "xrCreateInstance", TLArg(runtimeName.c_str(), "RuntimeName"));
             Log(fmt::format("Using OpenXR runtime: {}\n", runtimeName));
 
+            getFovAnglesSettings();
+
+            fovUp = utils::general::getSetting("fov_up").value_or(1000) / 1e3f;
+            fovDown = utils::general::getSetting("fov_down").value_or(1000) / 1e3f;
+            
+            Log(fmt::format("angle_up: {}\n", utils::general::getSetting("angle_up").value_or(defaultFovAngle)));
+            Log(fmt::format("angle_down: {}\n", utils::general::getSetting("angle_down").value_or(defaultFovAngle)));
+            Log(fmt::format("fov_up: {}\n", fovUp));
+            Log(fmt::format("fov_down: {}\n", fovDown));
+
             return XR_SUCCESS;
+        }
+
+        void getFovAnglesSettings() {
+            m_cachedEyeFov[0].angleUp = m_cachedEyeFov[1].angleUp =
+                DirectX::XM_PI * utils::general::getSetting("angle_up").value_or(defaultFovAngle) / 180000.0f;
+            m_cachedEyeFov[0].angleDown = m_cachedEyeFov[1].angleDown =
+                DirectX::XM_PI * utils::general::getSetting("angle_down").value_or(defaultFovAngle) / 180000.0f;
         }
 
         // https://www.khronos.org/registry/OpenXR/specs/1.0/html/xrspec.html#xrGetSystem

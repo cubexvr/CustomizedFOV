@@ -25,6 +25,7 @@
 #include "pch.h"
 
 namespace xr {
+    
 
     static inline std::string ToString(XrVersion version) {
         return fmt::format("{}.{}.{}", XR_VERSION_MAJOR(version), XR_VERSION_MINOR(version), XR_VERSION_PATCH(version));
@@ -63,5 +64,6 @@ namespace xr {
         return fmt::format(
             "x:{}, y:{}, w:{}, h:{}", rect.offset.x, rect.offset.y, rect.extent.width, rect.extent.height);
     }
-
+    
 } // namespace xr
+
