@@ -8,7 +8,7 @@ After that the FOV values of your headset will be known to the layer and it shou
 
 How to set the FOV Customization factors:
 
-  You nhave to add the following regestry DWORD values are used for scaling the fov. 
+  You have to add the following registry DWORD values for scaling the fov. 
   The numerical value is the fov scaling factor * 1000, e.g. if you want to reduce the vertial fov to 80% you have to set fov_down and fov_up to 800 (which is interpreted as 0.8)
   
   Computer\HKEY_CURRENT_USER\Software\CustomizedFOV\fov_down
