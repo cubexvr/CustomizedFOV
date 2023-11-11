@@ -187,6 +187,12 @@ namespace openxr_api_layer {
 
             getFovAnglesSettings();
 
+            if (!utils::general::getSetting("fov_up").has_value()) {
+                utils::general::setSetting("fov_up", 1000);
+            }
+            if (!utils::general::getSetting("fov_down").has_value()) {
+                utils::general::setSetting("fov_down", 1000);
+            }
             fovUp = utils::general::getSetting("fov_up").value_or(1000) / 1e3f;
             fovDown = utils::general::getSetting("fov_down").value_or(1000) / 1e3f;
             
