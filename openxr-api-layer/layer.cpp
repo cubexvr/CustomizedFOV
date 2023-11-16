@@ -70,14 +70,11 @@ namespace openxr_api_layer {
             if (XR_SUCCEEDED(result) && viewCapacityInput) {
                 if (viewConfigurationType == XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO) {
                     for (uint32_t i = 0; i < *viewCountOutput; i++) {
+                        float sumTan = tan(m_cachedEyeFov[i].angleUp) + tan(m_cachedEyeFov[i].angleDown);
                         views[i].recommendedImageRectHeight =
-                            (views[i].recommendedImageRectHeight / 2) *
-                                (tan(m_cachedEyeFov[i].angleUp * fovUp) /
-                                 tan(m_cachedEyeFov[i].angleUp)) 
-                            +
-                            (views[i].recommendedImageRectHeight / 2) *
-                                (tan(m_cachedEyeFov[i].angleDown * fovDown) /
-                                 tan(m_cachedEyeFov[i].angleDown));                                                                   
+                            ((tan(m_cachedEyeFov[i].angleUp * fovUp) + tan(m_cachedEyeFov[i].angleDown * fovDown)) /
+                             sumTan) *
+                            views[i].recommendedImageRectHeight;                                                                   
                     }
                 }
             }
